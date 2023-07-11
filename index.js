@@ -35,7 +35,8 @@ app.post("/run", async (req, res) => {
   // need to generate a c++ file with content from the request
   const filepath = await generateFile(language, code);
   // write into DB
-  const job = await new Job({ language, filepath }).save();
+  const job = await new Job({ language, filepath }).save()
+  .catch((err)=>console.log(err))
   const jobId = job["_id"];
   addJobToQueue(jobId);
   res.status(201).json({ jobId });
@@ -50,14 +51,15 @@ app.get("/status", async (req, res) => {
       .json({ success: false, error: "missing id query param" });
   }
 
-  const job = await Job.findById(jobId);
+  const job = await Job.findById(jobId).catch((err)=>console.log(err))
 
   if (job === undefined) {
     return res.status(400).json({ success: false, error: "couldn't find job" });
   }
 
   return res.status(200).json({ success: true, job });
-});
+  
+})
 
 app.listen(5000, () => {
   console.log(`Listening on port 5000!`);
